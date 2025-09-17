@@ -9,6 +9,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-14-blue?logo=next.js)
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow?logo=javascript)
 
+
 ---
 
 ## 🔹 About DSRT.js
