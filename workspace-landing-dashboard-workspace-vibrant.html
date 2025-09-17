@@ -1,608 +1,430 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Workspace Hub — Landing → Dashboard → Workspace</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DSRT.js — Particles Network Background (WebGL)</title>
 <style>
-  :root{
-    /* Vibrant modern theme */
-    --bg-0: #0b1020;
-    --bg-1: linear-gradient(180deg,#071730 0%,#051124 100%);
-    --card:#071726;
-    --muted:#9fb3c8;
-    --accent-1:#7c3aed;   /* purple */
-    --accent-2:#06b6d4;   /* cyan */
-    --accent-3:#ff6b6b;   /* coral */
-    --glass: rgba(255,255,255,0.04);
-    --radius:14px;
-    --left-w:280px; --right-w:380px; --dock-h:76px;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:#f4fbff;background:var(--bg-0);-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  /* App shell */
-  header.appbar{
-    display:flex;align-items:center;justify-content:space-between;padding:14px 18px;
-    background:linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    position:sticky;top:0;z-index:80;
-    backdrop-filter: blur(6px);
-  }
-  .brand{display:flex;flex-direction:column;gap:2px}
-  .brand .title{font-weight:800;color:var(--accent-1);font-size:18px}
-  .brand .subtitle{font-size:12px;color:var(--muted)}
-  nav{display:flex;gap:8px;align-items:center}
-  .nav-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-  .nav-btn.primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;border:none;box-shadow:0 6px 18px rgba(7,20,40,0.6)}
-  .breadcrumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
-  /* layout */
-  .container{display:flex;gap:16px;padding:18px;min-height:calc(100vh - 74px)}
-  .sidebar{width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;color:var(--muted);height:fit-content}
-  .main{flex:1;display:flex;flex-direction:column;gap:14px}
-  .card{background:linear-gradient(180deg,#07182b,#041323);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(4,8,24,0.6)}
-  .muted{color:var(--muted)}
-  .btn{background:linear-gradient(90deg,var(--accent-2),var(--accent-1));border:none;color:white;padding:10px 12px;border-radius:10px;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-  /* Workspace layout (desktop) */
-  .workspace-layout{display:grid;grid-template-columns:var(--left-w) 1fr var(--right-w);gap:12px;align-items:start}
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px}
-  .assets{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 220px);overflow:auto}
-  .asset-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
-  .canvas-wrap{display:flex;flex-direction:column;gap:10px}
-  .canvas{background:linear-gradient(180deg,#052033,#02101a);border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 16px 40px rgba(2,6,23,0.6)}
-  .canvas.aspect{aspect-ratio:16/9}
-  .canvas .placeholder{color:var(--muted);text-align:center;padding:18px}
-  .canvas .control-top{position:absolute;top:12px;left:12px;display:flex;gap:8px}
-  .canvas .control-top .chip{background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:6px 10px;border-radius:999px;color:var(--muted);font-weight:600}
-  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px}
-  .mini-actions{display:flex;gap:8px;flex-wrap:wrap}
-  .pill{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px;color:var(--muted);font-weight:700}
-  /* timeline */
-  .timeline{grid-column:1/4;background:linear-gradient(180deg,#021623,#011216);padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:10px}
-  .tracks{display:flex;flex-direction:column;gap:8px}
-  .track{display:flex;align-items:center;gap:8px}
-  .track-label{width:64px;color:var(--muted);font-size:13px}
-  .track-clips{flex:1;display:flex;gap:8px;align-items:center}
-  .clip{min-width:140px;height:44px;border-radius:10px;padding:8px;color:white;font-weight:800;display:flex;align-items:center;justify-content:center;position:relative}
-  .clip.video{background:linear-gradient(90deg,#4f46e5,#06b6d4)}
-  .clip.audio{background:linear-gradient(90deg,#ff7a59,#ffb38a)}
-  .playhead{position:absolute;width:12px;height:12px;background:var(--accent-3);border-radius:50%;left:20%}
-  /* inspector */
-  .inspector{display:flex;flex-direction:column;gap:10px;overflow:auto;height:calc(100vh - 220px)}
-  .inspector .section{padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02))}
-  .inspector h4{margin:6px 0;color:var(--accent-1)}
-  /* mobile adjustments */
-  @media(max-width:900px){
-    .container{padding:12px}
-    .sidebar{display:none}
-    .workspace-layout{grid-template-columns:1fr;grid-template-rows:auto auto auto;gap:12px}
-    .inspector{display:none} /* inspector becomes slide-in */
-    .timeline{order:3;height:140px}
-    .canvas{aspect-ratio:16/9;width:100%}
-    .mobile-dock{position:fixed;left:12px;right:12px;bottom:12px;height:var(--dock-h);background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border-radius:14px;display:flex;align-items:center;justify-content:space-around;padding:10px;z-index:120;box-shadow:0 12px 30px rgba(4,8,24,0.6)}
-    .mobile-feature-row{display:flex;gap:8px;overflow:auto;padding-top:8px}
-    .feature-card{min-width:120px;padding:10px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
-  }
-  /* modals/panels */
-  .modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:140}
-  .modal{width:94%;max-width:720px;background:#071827;border-radius:12px;padding:14px;color:white;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-  .slide-panel{position:fixed;right:12px;top:8%;width:92%;max-width:420px;height:82%;background:linear-gradient(180deg,#071827,#04101a);border-radius:12px;padding:12px;transform:translateX(110%);transition:transform .28s ease;z-index:150}
-  .slide-panel.open{transform:translateX(0)}
-  /* small */
-  .small{font-size:13px;color:var(--muted)}
-  .kicker{font-weight:700;color:var(--accent-2)}
+  :root { --accent1: #00ffee; --accent2: #ff7a36; --accent3: #6a3fff; }
+  html,body { height:100%; margin:0; background:#04070a; color:#eaf6f6; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+  canvas { position:fixed; inset:0; width:100%; height:100%; display:block; z-index:0; }
+  .hero { position: relative; z-index: 4; height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; pointer-events:none; }
+  .hero .content { pointer-events:auto; background: rgba(0,0,0,0.28); padding:28px 36px; border-radius:16px; backdrop-filter: blur(6px); }
+  h1 { margin:0; font-size: clamp(28px, 5vw, 64px); color:var(--accent1); letter-spacing: -0.02em; }
+  p { margin:8px 0 0; color:rgba(230,245,245,0.9); }
+  .controls { position: absolute; right:12px; top:12px; z-index:5; color:#dbeff0; font-size:13px; background:rgba(255,255,255,0.03); padding:8px 10px; border-radius:10px; }
+  .small { font-size:12px; opacity:0.85 }
 </style>
 </head>
 <body>
-  <header class="appbar" role="banner" aria-label="Top bar">
-    <div style="display:flex;gap:12px;align-items:center">
-      <div class="brand">
-        <div class="title">Workspace Hub</div>
-        <div class="subtitle">Landing → Dashboard → Workspace</div>
-      </div>
-      <div class="breadcrumb" aria-hidden="false" style="margin-left:14px">
-        <div class="small">Landing</div> <div class="small">›</div>
-        <div class="small">Dashboard</div> <div class="small">›</div>
-        <div class="small">Workspace</div>
-      </div>
-    </div>
+<canvas id="dsrt-gl"></canvas>
 
-    <nav>
-      <button class="nav-btn" data-route="landing">Landing</button>
-      <button class="nav-btn" data-route="dashboard">Dashboard</button>
-      <button class="nav-btn primary" data-route="workspaces">Open Workspace</button>
-      <button class="nav-btn" id="profileBtn">Profile</button>
-      <button class="nav-btn" id="billingBtn">Premium</button>
-    </nav>
-  </header>
-
-  <div class="container">
-    <aside class="sidebar" id="leftSidebar">
-      <div class="card">
-        <strong>Projects</strong>
-        <div class="muted small">Recent & pinned</div>
-        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
-          <div class="asset-item">Promo Reel <span class="small muted">Video</span></div>
-          <div class="asset-item">Social Post <span class="small muted">Photo</span></div>
-          <div class="asset-item">Brand Kit <span class="small muted">Logo</span></div>
-        </div>
-        <div style="margin-top:12px">
-          <button class="btn" id="newProject">New Project</button>
-        </div>
-      </div>
-      <div style="height:12px"></div>
-      <div class="card">
-        <strong>Account</strong>
-        <div class="muted small">projectmydsrt-bro</div>
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <button class="ghost">Settings</button>
-          <button class="ghost">Help</button>
-        </div>
-      </div>
-    </aside>
-
-    <main class="main" id="mainArea">
-      <!-- Landing -->
-      <section id="landing" class="page" aria-live="polite">
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <h1 style="margin:0;color:var(--accent-1)">Selamat datang di Workspace Hub</h1>
-              <p class="muted">Satu tempat mengelola project & membuka workspace untuk Video, Photo, dan Logo.</p>
-            </div>
-            <div>
-              <button class="btn" data-route="dashboard">Go to Dashboard</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid" style="margin-top:12px">
-          <div class="card">
-            <h3 style="margin:0;color:var(--accent-2)">Why Workspace Hub?</h3>
-            <p class="muted small">Fast edits, AI tools, and multi-workspace flow. Start with Dashboard to choose your project.</p>
-            <div style="margin-top:8px"><button class="ghost" data-route="dashboard">Open Dashboard</button></div>
-          </div>
-
-          <div class="card">
-            <h3 style="margin:0;color:var(--accent-3)">Quick Tour</h3>
-            <p class="muted small">Follow: Landing → Dashboard → Workspace. Mobile-first canvas, desktop powerful inspector.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Dashboard -->
-      <section id="dashboard" class="page" style="display:none">
-        <div class="card" style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <h2 style="margin:0;color:var(--accent-1)">Dashboard</h2>
-            <div class="muted small">Projects • Templates • Activity</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="ghost" id="manageTemplates">Templates</button>
-            <button class="btn" id="createProjectBtn">Create Project</button>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          <div style="flex:1">
-            <div class="grid" style="margin-top:12px">
-              <div class="card">
-                <h3>Promo Reel</h3>
-                <div class="muted small">Last edited: 3 hours ago</div>
-                <div style="margin-top:8px;display:flex;gap:8px">
-                  <button class="btn openProject" data-project="Promo Reel" data-ws="video">Open Video</button>
-                  <button class="ghost openProject" data-project="Promo Reel" data-ws="photo">Open Photo</button>
-                </div>
-              </div>
-              <div class="card">
-                <h3>Social Post</h3>
-                <div class="muted small">Last edited: 2 days ago</div>
-                <div style="margin-top:8px;display:flex;gap:8px">
-                  <button class="btn openProject" data-project="Social Post" data-ws="photo">Open Photo</button>
-                  <button class="ghost openProject" data-project="Social Post" data-ws="logo">Open Logo</button>
-                </div>
-              </div>
-              <div class="card">
-                <h3>Create New</h3>
-                <p class="muted small">Start from template or blank</p>
-                <div style="margin-top:8px"><button class="btn" id="blankProjectBtn">Blank Project</button></div>
-              </div>
-            </div>
-          </div>
-
-          <aside style="width:320px;display:flex;flex-direction:column;gap:12px">
-            <div class="card">
-              <strong>Premium Plan</strong>
-              <div class="muted small">HQ renders • Cloud AI • Team shares</div>
-              <div style="margin-top:8px;display:flex;gap:8px"><button class="btn" id="upgradeNow">Upgrade</button><button class="ghost" id="comparePlans">Compare</button></div>
-            </div>
-
-            <div class="card">
-              <strong>Profile</strong>
-              <div class="muted small">projectmydsrt-bro</div>
-              <div style="margin-top:8px"><button class="ghost" id="editProfile">Edit Profile</button></div>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <!-- Workspace selector -->
-      <section id="workspaces" class="page" style="display:none">
-        <div class="card">
-          <h2 style="margin:0;color:var(--accent-2)">Choose Workspace</h2>
-          <p class="muted small">Open an optimized workspace for your content type.</p>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn openWorkspace" data-ws="video">Video Workspace</button>
-            <button class="btn openWorkspace" data-ws="photo">Photo Workspace</button>
-            <button class="btn openWorkspace" data-ws="logo">Logo Workspace</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- VIDEO Workspace -->
-      <section id="videoWorkspace" class="page" style="display:none">
-        <div class="workspace-layout">
-          <!-- LEFT: Assets & templates -->
-          <div class="panel assets">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <h3 style="margin:0;color:var(--accent-1)">Assets</h3>
-              <div class="small muted">Search • Filter</div>
-            </div>
-            <div style="margin-top:10px" class="muted small">Drag media to timeline or canvas</div>
-            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-              <div class="asset-item">Imported • Clip01 <button class="ghost">Insert</button></div>
-              <div class="asset-item">Stock • Beach.mp4 <button class="ghost">Preview</button></div>
-              <div class="asset-item">Audio • Track01.mp3 <button class="ghost">Insert</button></div>
-            </div>
-            <div style="margin-top:12px" class="small muted">Primary Left Tools</div>
-            <div style="margin-top:8px" class="mini-actions">
-              <div class="pill">Import</div><div class="pill">Bins</div><div class="pill">Templates</div>
-            </div>
-          </div>
-
-          <!-- CENTER: Canvas -->
-          <div class="canvas-wrap">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <h3 style="margin:0;color:var(--accent-2)">Promo Reel — Video</h3>
-                <div class="muted small">Project • 00:12</div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button class="ghost" id="undo">Undo</button>
-                <button class="ghost" id="redo">Redo</button>
-                <button class="btn" id="share">Share</button>
-              </div>
-            </div>
-
-            <div class="canvas aspect" id="videoCanvas" aria-label="Video preview">
-              <div class="placeholder">
-                VIDEO PREVIEW<br><span class="muted small">Tap preview • Double-click (desktop) to open inspector</span>
-              </div>
-              <div class="control-top">
-                <div class="chip">Fit</div><div class="chip">100%</div><div class="chip">Safe</div>
-              </div>
-            </div>
-
-            <div class="toolbar">
-              <div class="mini-actions">
-                <button class="ghost" id="play">Play</button>
-                <button class="ghost" id="cut">Cut</button>
-                <button class="ghost" id="split">Split</button>
-                <button class="ghost" id="speed">Speed</button>
-                <button class="ghost" id="keyframes">Keyframes</button>
-              </div>
-              <div class="small muted">Proxy • GPU accel</div>
-            </div>
-
-            <!-- Mobile stacked feature area (visible on small screens) -->
-            <div class="features-below" id="mobileFeatures" style="display:none">
-              <div class="mobile-feature-row">
-                <div class="feature-card">Auto-cut</div>
-                <div class="feature-card">Bg Remove</div>
-                <div class="feature-card">Auto-caption</div>
-                <div class="feature-card">Super-res</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- RIGHT: Inspector -->
-          <aside class="panel inspector">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <h3 style="margin:0">Inspector</h3>
-              <div class="small muted">Contextual</div>
-            </div>
-
-            <div class="section">
-              <h4>Layers</h4>
-              <div class="pill">V1 • Clip01</div>
-              <div class="pill">A1 • Music</div>
-            </div>
-
-            <div class="section">
-              <h4>Transform</h4>
-              <div style="display:flex;gap:8px;margin-top:6px">
-                <div class="pill">Position</div><div class="pill">Scale</div><div class="pill">Rotate</div>
-              </div>
-            </div>
-
-            <div class="section">
-              <h4>Smart Tools</h4>
-              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-                <button class="ghost" id="bgRemove">Background Remove</button>
-                <button class="ghost" id="autocut">Auto-cut</button>
-                <button class="ghost" id="autocap">Auto-caption</button>
-                <button class="ghost" id="inpaint">Object Remove</button>
-                <button class="ghost" id="superres">Super-res</button>
-                <button class="ghost" id="frameinterp">Frame interp</button>
-              </div>
-              <div class="muted small" style="margin-top:8px">Preview fast → Queue HQ refine (cloud) for final.</div>
-            </div>
-
-            <div class="section">
-              <h4>Audio</h4>
-              <div style="display:flex;gap:8px">
-                <div class="pill">Auto-duck</div><div class="pill">Denoise</div><div class="pill">Separate</div>
-              </div>
-            </div>
-
-            <div class="section">
-              <h4>Collaboration</h4>
-              <div style="display:flex;gap:8px">
-                <button class="ghost" id="comments">Comments</button>
-                <button class="ghost" id="versions">Versions</button>
-                <button class="ghost" id="sharelink">Share link</button>
-              </div>
-            </div>
-          </aside>
-
-          <!-- Timeline (spans full width) -->
-          <div class="timeline" style="grid-column:1/4">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div class="small muted">Timeline • Multi-track</div>
-              <div style="display:flex;gap:8px">
-                <button class="ghost" id="expand">Expand</button>
-                <button class="btn" id="exportBtn">Export</button>
-              </div>
-            </div>
-
-            <div class="tracks">
-              <div class="track">
-                <div class="track-label">V1</div>
-                <div class="track-clips">
-                  <div class="clip video" id="clip1">Clip01
-                    <div class="playhead" style="left:28%"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="track">
-                <div class="track-label">A1</div>
-                <div class="track-clips"><div class="clip audio">Music</div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- PHOTO Workspace -->
-      <section id="photoWorkspace" class="page" style="display:none">
-        <div class="workspace-layout" style="grid-template-columns:var(--left-w) 1fr">
-          <div class="panel">
-            <h3>Presets & Brushes</h3>
-            <div class="muted small">One-tap filters, masks, retouch</div>
-            <div style="margin-top:10px" class="mini-actions">
-              <div class="pill">Presets</div><div class="pill">Crop</div><div class="pill">Mask</div>
-            </div>
-          </div>
-
-          <div>
-            <div class="canvas aspect" id="photoCanvas">
-              <div class="placeholder">PHOTO CANVAS — Pinch to zoom (mobile)</div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-              <div class="mini-actions">
-                <button class="ghost">Crop</button><button class="ghost">Heal</button><button class="ghost">Selective</button>
-              </div>
-              <div class="small muted">Before/After</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- LOGO Workspace -->
-      <section id="logoWorkspace" class="page" style="display:none">
-        <div class="workspace-layout">
-          <div class="panel">
-            <h3>Assets • Symbols</h3>
-            <div class="muted small">Colors • Fonts • Symbols</div>
-          </div>
-
-          <div>
-            <div class="canvas aspect" id="logoCanvas">
-              <div class="placeholder">VECTOR ARTBOARD — Pen • Shapes • Symbols</div>
-            </div>
-            <div style="display:flex;justify-content:flex-end;margin-top:8px" class="small muted">Artboards • Export SVG</div>
-          </div>
-
-          <aside class="panel inspector">
-            <h3>Properties</h3>
-            <div class="muted small">Fill • Stroke • Align • Boolean</div>
-            <div style="margin-top:8px" class="mini-actions"><div class="pill">Export SVG</div><div class="pill">Symbols</div></div>
-          </aside>
-        </div>
-      </section>
-    </main>
+<div class="hero">
+  <div class="content">
+    <h1>DSRT.js</h1>
+    <p class="small">Next-gen, WebGL/WebGPU-ready 3D engine — sample: responsive fullscreen particles network background</p>
   </div>
+</div>
 
-  <!-- Mobile dock -->
-  <div class="mobile-dock" id="mobileDock" style="display:none">
-    <button class="nav-btn" id="mMedia">📁</button>
-    <button class="nav-btn" id="mEdit">✂️</button>
-    <button class="nav-btn" id="mText">🅰️</button>
-    <button class="nav-btn" id="mExportMobile">⤓</button>
-  </div>
-
-  <!-- Slide panel / modal elements -->
-  <div class="modal-backdrop" id="modalBackdrop" style="display:none">
-    <div class="modal" id="modalContent"></div>
-  </div>
-
-  <div class="slide-panel" id="inspectorMobile" aria-hidden="true">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong>Inspector</strong>
-      <button class="ghost" id="closeInspectorMobile">Close</button>
-    </div>
-    <div style="margin-top:8px" class="small muted">Transform • Effects • Smart Tools</div>
-    <div style="margin-top:10px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-      <button class="ghost">Scale</button><button class="ghost">Opacity</button>
-      <button class="ghost">Keyframes</button><button class="ghost">Bg Remove</button>
-    </div>
-  </div>
+<div class="controls small" id="ui">
+  Particles: <span id="countLabel">200</span><br/>
+  Drag to orbit • Wheel to zoom
+</div>
 
 <script>
-  // Ensure navigation order: Landing -> Dashboard -> Workspaces/Workspace
-  const pages = [...document.querySelectorAll('.page')];
-  function showPage(id){
-    pages.forEach(p => p.id === id ? p.style.display = '' : p.style.display = 'none');
-    // Manage breadcrumb highlight / state if needed (simple)
-    // Close modals/panels
-    closeModal(); closeInspectorMobile();
-    // show/hide mobile dock
-    applyResponsive();
-    // log
-    console.log('navigated to', id);
-  }
+/* ==== DSRT-mini: WebGL Particles Network Background (no external libs) ==== */
 
-  // Hook navigation buttons (top + inline)
-  document.querySelectorAll('[data-route]').forEach(btn=> btn.addEventListener('click', ()=> {
-    const r = btn.getAttribute('data-route');
-    // preserve landing -> dashboard -> workspace order by guiding user:
-    if(r === 'workspaces'){
-      // user intends to open workspace selector: first ensure dashboard visited -> then open workspaces
-      showPage('dashboard');
-      setTimeout(()=> showPage('workspaces'), 250);
-      return;
+const canvas = document.getElementById('dsrt-gl');
+const gl = canvas.getContext('webgl', { antialias: true });
+if (!gl) {
+  alert('WebGL not supported in this browser.');
+  throw new Error('WebGL not available');
+}
+
+/* ----------------- Utilities: basic mat4 functions ----------------- */
+const Mat4 = {
+  identity() {
+    return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+  },
+  multiply(a,b) {
+    const out = new Float32Array(16);
+    for (let i = 0; i < 4; ++i) {
+      for (let j = 0; j < 4; ++j) {
+        let sum = 0;
+        for (let k = 0; k < 4; ++k) sum += a[k*4 + j] * b[i*4 + k];
+        out[i*4 + j] = sum;
+      }
     }
-    showPage(r);
-  }));
+    return out;
+  },
+  perspective(fovy, aspect, near, far) {
+    const f = 1.0 / Math.tan(fovy/2);
+    const nf = 1 / (near - far);
+    const out = new Float32Array(16);
+    out[0] = f / aspect; out[1] = 0; out[2] = 0; out[3] = 0;
+    out[4] = 0; out[5] = f; out[6] = 0; out[7] = 0;
+    out[8] = 0; out[9] = 0; out[10] = (far + near) * nf; out[11] = -1;
+    out[12] = 0; out[13] = 0; out[14] = (2 * far * near) * nf; out[15] = 0;
+    return out;
+  },
+  lookAt(eye, center, up) {
+    const zx = eye[0] - center[0], zy = eye[1] - center[1], zz = eye[2] - center[2];
+    let zlen = Math.hypot(zx, zy, zz) || 1;
+    const zxN = zx / zlen, zyN = zy / zlen, zzN = zz / zlen;
 
-  // open workspace buttons
-  document.querySelectorAll('.openWorkspace, .openProject').forEach(b=> b.addEventListener('click', (e)=> {
-    const ws = e.currentTarget.dataset.ws || 'video';
-    // enforce order: show dashboard first briefly, then workspace
-    showPage('dashboard');
-    setTimeout(()=> {
-      if(ws === 'video') showPage('videoWorkspace');
-      if(ws === 'photo') showPage('photoWorkspace');
-      if(ws === 'logo') showPage('logoWorkspace');
-      applyResponsive();
-    }, 220);
-  }));
+    const ux = up[1]*zzN - up[2]*zyN;
+    const uy = up[2]*zxN - up[0]*zzN;
+    const uz = up[0]*zyN - up[1]*zxN;
+    let ulen = Math.hypot(ux, uy, uz) || 1;
+    const uxN = ux / ulen, uyN = uy / ulen, uzN = uz / ulen;
 
-  // Default landing on load; user requested explicit order landing -> dashboard -> workspace
-  window.addEventListener('load', ()=> {
-    const hash = location.hash.replace('#','');
-    if(!hash) showPage('landing');
-    else if(['landing','dashboard','workspaces','videoWorkspace','photoWorkspace','logoWorkspace'].includes(hash)) showPage(hash);
-    else showPage('landing');
-  });
+    const vx = zyN*uzN - zzN*uyN;
+    const vy = zzN*uxN - zxN*uzN;
+    const vz = zxN*uyN - zyN*uxN;
 
-  // Modal helpers
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const modalContent = document.getElementById('modalContent');
-  function openModal(html){
-    modalContent.innerHTML = html;
-    modalBackdrop.style.display = 'flex';
+    const out = new Float32Array(16);
+    out[0]=uxN; out[1]=vx; out[2]=zxN; out[3]=0;
+    out[4]=uyN; out[5]=vy; out[6]=zyN; out[7]=0;
+    out[8]=uzN; out[9]=vz; out[10]=zzN; out[11]=0;
+    out[12]=-(uxN*eye[0]+uyN*eye[1]+uzN*eye[2]);
+    out[13]=-(vx*eye[0]+vy*eye[1]+vz*eye[2]);
+    out[14]=-(zxN*eye[0]+zyN*eye[1]+zzN*eye[2]);
+    out[15]=1;
+    return out;
   }
-  function closeModal(){ modalBackdrop.style.display = 'none'; modalContent.innerHTML = ''; }
-  modalBackdrop.addEventListener('click', (e)=> { if(e.target === modalBackdrop) closeModal(); });
+};
 
-  // Inspector mobile slide panel
-  const inspectorMobile = document.getElementById('inspectorMobile');
-  function openInspectorMobile(){ inspectorMobile.classList.add('open'); inspectorMobile.setAttribute('aria-hidden','false'); }
-  function closeInspectorMobile(){ inspectorMobile.classList.remove('open'); inspectorMobile.setAttribute('aria-hidden','true'); }
-  document.getElementById('closeInspectorMobile').addEventListener('click', closeInspectorMobile);
-  document.getElementById('openMedia')?.addEventListener('click', ()=> openModal('<strong>Media Browser</strong><p class="muted">Import or choose asset</p><div style="margin-top:12px"><button class="btn" onclick="closeModal()">Close</button></div>'));
+/* ----------------- Shader sources ----------------- */
+/* Vertex for points (particles) */
+const vsPoints = `
+attribute vec3 aPosition;
+uniform mat4 uMVP;
+uniform float uPointSize;
+varying float vDepth;
+void main() {
+  vec4 clip = uMVP * vec4(aPosition, 1.0);
+  gl_Position = clip;
+  // make size attenuate by clip-space depth (simple)
+  float d = max(0.1, -clip.z);
+  gl_PointSize = uPointSize / d;
+  vDepth = d;
+}
+`;
 
-  // Feature buttons: quick preview then HQ refine pattern
-  ['bgRemove','autocut','autocap','inpaint','superres','frameinterp','duckBtn','denoiseBtn','separateBtn'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.addEventListener('click', (e)=> {
-      const name = e.currentTarget.textContent || 'Tool';
-      openModal(`<strong>${name} — Fast preview</strong><p class="muted">A low-latency preview is generated. For final quality, queue HQ refine (cloud).</p>
-        <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="closeModal();alert('Preview applied (simulated)')">Apply Preview</button><button class="ghost" onclick="closeModal();alert('Queued HQ refine (simulated)')">Queue HQ</button></div>`);
-    });
-  });
+/* Fragment for points: radial falloff + additive glow */
+const fsPoints = `
+precision mediump float;
+uniform vec3 uColorA;
+uniform vec3 uColorB;
+varying float vDepth;
+void main(){
+  // radial gradient inside point sprite
+  vec2 coord = gl_PointCoord - 0.5;
+  float r = length(coord) * 2.0;
+  float alpha = smoothstep(1.0, 0.0, r);
+  // mix two accent colors by screen Y via vDepth for subtle variation
+  vec3 color = mix(uColorA, uColorB, clamp(vDepth*0.12, 0.0, 1.0));
+  // make center stronger
+  gl_FragColor = vec4(color * alpha, alpha * 0.8);
+}
+`;
 
-  // Timeline expand (desktop)
-  document.getElementById('expand')?.addEventListener('click', ()=> {
-    const tl = document.querySelector('.timeline');
-    if(!tl) return;
-    tl.style.height = tl.style.height === '60vh' ? '' : '60vh';
-    tl.scrollIntoView({behavior:'smooth'});
-  });
+/* Vertex for lines */
+const vsLines = `
+attribute vec3 aPosition;
+uniform mat4 uMVP;
+uniform float uThickness;
+varying float vAlpha;
+void main(){
+  vec4 clip = uMVP * vec4(aPosition, 1.0);
+  gl_Position = clip;
+  // simple alpha based on depth (farther = fainter)
+  vAlpha = clamp(1.0 - (-clip.z)*0.06, 0.0, 1.0);
+}
+`;
 
-  // Clips: long-press -> quick actions
-  document.querySelectorAll('.clip').forEach(c => {
-    let t;
-    c.addEventListener('pointerdown', (e)=> {
-      t = setTimeout(()=> {
-        openModal(`<strong>Quick Actions</strong><p class="muted">Duplicate / Delete / Detach</p><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="closeModal();alert('Duplicate (simulated)')">Duplicate</button><button class="ghost" onclick="closeModal();alert('Delete (simulated)')">Delete</button></div>`);
-      }, 600);
-    });
-    ['pointerup','pointerleave'].forEach(ev => c.addEventListener(ev, ()=> clearTimeout(t)));
-    c.addEventListener('dblclick', ()=> {
-      if(window.innerWidth <= 900) openInspectorMobile(); else openModal('<strong>Inspector (desktop)</strong><p class="muted">Right-side inspector is available on desktop.</p><div style="margin-top:8px"><button class="btn" onclick="closeModal()">Close</button></div>');
-    });
-  });
+/* Fragment for lines */
+const fsLines = `
+precision mediump float;
+uniform vec3 uLineColor;
+varying float vAlpha;
+void main(){
+  gl_FragColor = vec4(uLineColor, vAlpha * 0.9);
+}
+`;
 
-  // Responsive helpers: show mobile dock & stack features below canvas (mobile only)
-  const mobileDock = document.getElementById('mobileDock');
-  const mobileFeatures = document.getElementById('mobileFeatures');
-  function applyResponsive(){
-    if(window.innerWidth <= 900){
-      mobileDock.style.display = 'flex';
-      // show mobile stacked features within canvas area
-      if(document.getElementById('videoWorkspace').style.display !== 'none') mobileFeatures.style.display = 'block';
-      // hide inspector panel (desktop)
-      document.querySelectorAll('.inspector').forEach(el => el.style.display = 'none');
-    } else {
-      mobileDock.style.display = 'none';
-      mobileFeatures.style.display = 'none';
-      document.querySelectorAll('.inspector').forEach(el => el.style.display = '');
-      closeInspectorMobile();
+/* ----------------- Helpers: compile shaders ----------------- */
+function compileShader(src, type) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s));
+    gl.deleteShader(s);
+    return null;
+  }
+  return s;
+}
+function createProgram(vsSrc, fsSrc) {
+  const vs = compileShader(vsSrc, gl.VERTEX_SHADER);
+  const fs = compileShader(fsSrc, gl.FRAGMENT_SHADER);
+  const p = gl.createProgram();
+  gl.attachShader(p, vs);
+  gl.attachShader(p, fs);
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+    console.error(gl.getProgramInfoLog(p));
+    gl.deleteProgram(p);
+    return null;
+  }
+  return p;
+}
+
+/* ----------------- Programs & buffers ----------------- */
+const progPoints = createProgram(vsPoints, fsPoints);
+const progLines = createProgram(vsLines, fsLines);
+
+/* Attributes/uniform locations */
+const ptsAttrPos = gl.getAttribLocation(progPoints, 'aPosition');
+const ptsUniMVP = gl.getUniformLocation(progPoints, 'uMVP');
+const ptsUniSize = gl.getUniformLocation(progPoints, 'uPointSize');
+const ptsUniA = gl.getUniformLocation(progPoints, 'uColorA');
+const ptsUniB = gl.getUniformLocation(progPoints, 'uColorB');
+
+const lnAttrPos = gl.getAttribLocation(progLines, 'aPosition');
+const lnUniMVP = gl.getUniformLocation(progLines, 'uMVP');
+const lnUniColor = gl.getUniformLocation(progLines, 'uLineColor');
+
+/* Buffers */
+const pointsBuffer = gl.createBuffer();
+let linesBuffer = gl.createBuffer(); // will be updated every frame
+
+/* GL state */
+gl.enable(gl.DEPTH_TEST);
+gl.depthFunc(gl.LEQUAL);
+// Lines alpha blending (standard), points additive for glow
+gl.enable(gl.BLEND);
+
+/* ----------------- Scene data: particles ----------------- */
+let PARTICLE_COUNT = 200; // adjust if needed (lower on mobile)
+const countLabel = document.getElementById('countLabel');
+countLabel.textContent = PARTICLE_COUNT;
+
+const space = 6.0;          // cube half-size where particles live
+const positions = new Float32Array(PARTICLE_COUNT * 3);
+const velocities = new Float32Array(PARTICLE_COUNT * 3);
+
+function initParticles() {
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const i3 = i*3;
+    positions[i3+0] = (Math.random()*2 - 1) * space;
+    positions[i3+1] = (Math.random()*2 - 1) * space * 0.6; // slightly flattened
+    positions[i3+2] = (Math.random()*2 - 1) * space;
+    velocities[i3+0] = (Math.random()*2 - 1) * 0.02;
+    velocities[i3+1] = (Math.random()*2 - 1) * 0.02;
+    velocities[i3+2] = (Math.random()*2 - 1) * 0.02;
+  }
+}
+initParticles();
+
+/* ----------------- Dynamic lines array (pairs) ----------------- */
+let maxLinePairs = PARTICLE_COUNT * 6; // heuristic: each particle connects to up to ~6 neighbors
+let linePositions = new Float32Array(maxLinePairs * 2 * 3); // 2 vertices per pair
+let currentLineCount = 0;
+
+/* ----------------- Camera & controls ----------------- */
+let camRadius = Math.max(8, space * 1.5);
+let camPhi = 1.05, camTheta = 0.7; // spherical coords
+let target = [0, 0, 0];
+let eye = [0,0,camRadius];
+
+function updateEye() {
+  const sinP = Math.sin(camPhi), cosP = Math.cos(camPhi);
+  eye[0] = camRadius * sinP * Math.cos(camTheta);
+  eye[1] = camRadius * cosP;
+  eye[2] = camRadius * sinP * Math.sin(camTheta);
+}
+
+updateEye();
+
+/* Mouse controls */
+let dragging = false, lastX=0, lastY=0;
+canvas.addEventListener('mousedown', (e)=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+window.addEventListener('mouseup', ()=> dragging=false);
+window.addEventListener('mousemove', (e)=> {
+  if(!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  camTheta -= dx * 0.006;
+  camPhi -= dy * 0.006;
+  camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi));
+  updateEye();
+});
+canvas.addEventListener('wheel', (e)=> {
+  e.preventDefault();
+  camRadius += e.deltaY * 0.01;
+  camRadius = Math.max(3.0, Math.min(40.0, camRadius));
+  updateEye();
+}, { passive:false });
+
+/* Auto-rotate when not dragging */
+let lastInteraction = performance.now();
+window.addEventListener('mousedown', ()=> lastInteraction = performance.now());
+window.addEventListener('mousemove', ()=> lastInteraction = performance.now());
+
+/* ----------------- Resize handling (DPR aware) ----------------- */
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w; canvas.height = h;
+    gl.viewport(0,0,w,h);
+  }
+}
+new ResizeObserver(resize).observe(canvas);
+resize();
+
+/* ----------------- Animation loop: update particles & build line buffer ----------------- */
+const connectThreshold = 1.6;                 // in world units
+const connectThresholdSq = connectThreshold * connectThreshold;
+
+function buildLinePairs() {
+  // naive O(n^2) neighbor search (ok for ~200 particles). For many particles, use spatial hashing.
+  let lp = 0;
+  currentLineCount = 0;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const i3 = i*3;
+    const xi = positions[i3+0], yi = positions[i3+1], zi = positions[i3+2];
+    for (let j = i+1; j < PARTICLE_COUNT; j++) {
+      const j3 = j*3;
+      const dx = xi - positions[j3+0];
+      const dy = yi - positions[j3+1];
+      const dz = zi - positions[j3+2];
+      const dist2 = dx*dx + dy*dy + dz*dz;
+      if (dist2 <= connectThresholdSq) {
+        // add pair to linePositions
+        if (lp + 6 > linePositions.length) {
+          // expand buffer if needed
+          const newBuf = new Float32Array(linePositions.length * 1.5 + 12);
+          newBuf.set(linePositions);
+          linePositions = newBuf;
+        }
+        // first vertex
+        linePositions[lp++] = xi;
+        linePositions[lp++] = yi;
+        linePositions[lp++] = zi;
+        // second vertex
+        linePositions[lp++] = positions[j3+0];
+        linePositions[lp++] = positions[j3+1];
+        linePositions[lp++] = positions[j3+2];
+        currentLineCount++;
+      }
     }
   }
-  window.addEventListener('resize', applyResponsive);
-  window.addEventListener('load', applyResponsive);
+  // return used byte length
+  return lp;
+}
 
-  // Simple UI actions
-  document.getElementById('newProject').addEventListener('click', ()=> {
-    openModal('<strong>Create Project</strong><p class="muted">Project created (simulated)</p><div style="margin-top:8px"><button class="btn" onclick="closeModal()">OK</button></div>');
-  });
+/* ----------------- Main render loop ----------------- */
+let lastT = performance.now();
+function frame(now) {
+  const dt = Math.min(0.032, (now - lastT) / 1000);
+  lastT = now;
 
-  // Profile & Billing
-  document.getElementById('profileBtn').addEventListener('click', ()=> {
-    openModal(`<strong>Profile</strong><p class="muted">projectmydsrt-bro</p><div style="margin-top:8px"><button class="btn" onclick="closeModal()">Close</button></div>`);
-  });
-  document.getElementById('billingBtn').addEventListener('click', ()=> {
-    openModal(`<strong>Premium</strong><p class="muted">HQ renders, cloud AI, team features.</p><div style="margin-top:8px"><button class="btn" onclick="closeModal()">Subscribe</button><button class="ghost" onclick="closeModal()">Later</button></div>`);
-  });
+  // auto-rotate a bit if no recent interaction
+  if (performance.now() - lastInteraction > 1500 && !dragging) {
+    camTheta += 0.12 * dt;
+    camPhi = 1.05 + Math.sin(now * 0.0002) * 0.08;
+    updateEye();
+  }
 
-  // Export flow
-  document.getElementById('exportBtn')?.addEventListener('click', ()=> {
-    openModal(`<strong>Export</strong><p class="muted">Quick export (local) or HQ render (cloud).</p><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="closeModal();alert('Quick export started (simulated)')">Quick Export</button><button class="ghost" onclick="closeModal();alert('HQ export queued (simulated)')">Queue HQ</button></div>`);
-  });
+  // update particle positions
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const i3 = i*3;
+    positions[i3+0] += velocities[i3+0] * (1 + Math.sin(now*0.001 + i) * 0.5);
+    positions[i3+1] += velocities[i3+1] * (1 + Math.cos(now*0.001 + i*0.7) * 0.5);
+    positions[i3+2] += velocities[i3+2] * (1 + Math.sin(now*0.001*0.7 + i*0.3) * 0.5);
 
-  // keyboard shortcuts (desktop)
-  window.addEventListener('keydown', (e)=> {
-    if(e.key === 'Escape') closeModal();
-    if(e.key === 'd') showPage('dashboard');
-    if(e.key === 'l') showPage('landing');
-  });
+    // simple bounds reflect
+    for (let k=0;k<3;k++){
+      const p = positions[i3+k];
+      if (p < -space) { positions[i3+k] = -space; velocities[i3+k] *= -1; }
+      if (p >  space) { positions[i3+k] =  space; velocities[i3+k] *= -1; }
+    }
+  }
+
+  // build lines (pairs)
+  const used = buildLinePairs();
+
+  // GL viewport / clear
+  resize();
+  gl.clearColor(0.02, 0.03, 0.05, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // compute MVP
+  const aspect = canvas.width / canvas.height;
+  const proj = Mat4.perspective((45 * Math.PI)/180, aspect, 0.1, 200.0);
+  const view = Mat4.lookAt(eye, target, [0,1,0]);
+  const mvp = Mat4.multiply(proj, view);
+
+  /* --------- Draw lines --------- */
+  if (used > 0) {
+    // update lines buffer with dynamic data
+    gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, linePositions.subarray(0, used), gl.DYNAMIC_DRAW);
+
+    gl.useProgram(progLines);
+    gl.uniformMatrix4fv(lnUniMVP, false, mvp);
+    // line color (mix accents)
+    gl.uniform3fv(lnUniColor, new Float32Array([0.05, 0.8, 0.7])); // teal-ish
+
+    // set standard alpha blending for lines
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enableVertexAttribArray(lnAttrPos);
+    gl.vertexAttribPointer(lnAttrPos, 3, gl.FLOAT, false, 0, 0);
+
+    gl.lineWidth(1.0); // may be ignored in many browsers
+    gl.drawArrays(gl.LINES, 0, used/3);
+    gl.disableVertexAttribArray(lnAttrPos);
+  }
+
+  /* --------- Draw points (additive glow) --------- */
+  gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+
+  gl.useProgram(progPoints);
+  gl.uniformMatrix4fv(ptsUniMVP, false, mvp);
+  gl.uniform1f(ptsUniSize, 36.0); // base point size (will be attenuated)
+  // two accent colors for subtle mix
+  gl.uniform3fv(ptsUniA, new Float32Array([0.0, 0.93, 0.86]));
+  gl.uniform3fv(ptsUniB, new Float32Array([1.0, 0.48, 0.21]));
+
+  // additive blending for glow
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+  gl.enableVertexAttribArray(ptsAttrPos);
+  gl.vertexAttribPointer(ptsAttrPos, 3, gl.FLOAT, false, 0, 0);
+
+  // draw points
+  gl.drawArrays(gl.POINTS, 0, PARTICLE_COUNT);
+  gl.disableVertexAttribArray(ptsAttrPos);
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* Optional: adapt particle count for smaller screens */
+function adaptForMobile() {
+  const w = window.innerWidth;
+  if (w < 600 && PARTICLE_COUNT > 120) {
+    PARTICLE_COUNT = 120;
+    // re-init arrays for smaller count
+    // (for brevity: here we reload by reloading page; in prod we'd reallocate)
+    location.reload();
+  }
+}
+adaptForMobile();
+
+/* Done: neat little DSRT-style 3D background using WebGL */
 </script>
 </body>
-              </html>
+</html>
