@@ -131,8 +131,6 @@ See CHANGELOG.md for full release notes and history.
 
 🎉 Credits
 
-Original inspiration: Three.js (upgraded & modernized)
-
 Tailwind CSS for styling
 
 Contributors: See GitHub contributors
