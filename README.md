@@ -1,16 +1,19 @@
 # DSRT.js – Next-Gen 3D Web Engine
 
-![Build](https://img.shields.io/github/actions/workflow/status/projectmydsrt-bro/dsrt-nextjs/ci.yml?branch=main)
-![License](https://img.shields.io/github/license/projectmydsrt-bro/dsrt-nextjs)
-![Version](https://img.shields.io/github/package-json/v/projectmydsrt-bro/dsrt-nextjs)
-![Stars](https://img.shields.io/github/stars/projectmydsrt-bro/dsrt-nextjs)
-![Forks](https://img.shields.io/github/forks/projectmydsrt-bro/dsrt-nextjs)
+![Build](https://img.shields.io/github/actions/workflow/status/projectmydsrt-bro/dsrt-nextjs/ci.yml?branch=main?color=green)
+![Version](https://img.shields.io/github/package-json/v/projectmydsrt-bro/dsrt-nextjs?color=blue)
+![License](https://img.shields.io/github/license/projectmydsrt-bro/dsrt-nextjs?color=green)
+![Stars](https://img.shields.io/github/stars/projectmydsrt-bro/dsrt-nextjs?style=social)
+![Forks](https://img.shields.io/github/forks/projectmydsrt-bro/dsrt-nextjs?style=social)
+![Open Issues](https://img.shields.io/github/issues/projectmydsrt-bro/dsrt-nextjs)
+![Next.js](https://img.shields.io/badge/Next.js-14-blue?logo=next.js)
+![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow?logo=javascript)
 
 ---
 
 ## 🔹 About DSRT.js
 
-**DSRT.js** is a **Next-Gen 3D Web Engine** designed to be a modern, upgraded alternative to Three.js.  
+**DSRT.js** is a **Next-Gen 3D Web Engine** designed as a modern, upgraded alternative to Three.js.  
 It provides **fullscreen interactive 3D backgrounds, advanced geometry, lighting, and post-processing effects** for web apps, demos, and landing pages.  
 
 This project includes a **Next.js landing page** showcasing DSRT.js, interactive demos, and collaboration tools.
@@ -99,7 +102,7 @@ Follow the Contributing Guidelines
 
 Report security issues via SECURITY.md
 
-Join discussions on GitHub Discussions
+Follow Code of Conduct
 
 Star & fork the project if you like it!
 
@@ -118,16 +121,16 @@ All third-party libraries and assets are listed in NOTICE.md.
 
 ---
 
-📌 Code of Conduct
+📝 Changelog
 
-Please follow our Code of Conduct to ensure a welcoming and respectful community.
+See CHANGELOG.md for full release notes and history.
 
 
 ---
 
 🎉 Credits
 
-Original inspiration: Three.js (upgrade & modernized)
+Original inspiration: Three.js (upgraded & modernized)
 
 Tailwind CSS for styling
 
